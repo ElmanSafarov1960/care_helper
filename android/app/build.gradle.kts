@@ -4,19 +4,20 @@ plugins {
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
 android {
     namespace = "com.elman.carehelper"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
+
+    // Исправлено: всё это должно быть ВНУТРИ блока android
     sourceSets {
         getByName("main") {
             resources.srcDirs("src/main/resources")
         }
     }
-}
 
     compileOptions {
-        // КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: в .kts добавляется префикс "is"
         isCoreLibraryDesugaringEnabled = true 
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -28,28 +29,29 @@ android {
 
     defaultConfig {
         applicationId = "com.elman.carehelper"
-        // Для работы десугаринга и уведомлений ставим минимум 21
         minSdk = flutter.minSdkVersion 
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         
-        // В .kts обязательно через "="
         multiDexEnabled = true
     }
 
     buildTypes {
         getByName("release") {
+            // ВНИМАНИЕ: Для финальной версии в Google Play здесь нужно будет 
+            // сменить на твой релизный конфиг подписи!
             signingConfig = signingConfigs.getByName("debug")
         }
     }
-}
+} // Вот тут закрывается блок android
 
 dependencies {
-    // В .kts обязательны скобки и двойные кавычки
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 }
 
 flutter {
     source = "../.."
 }
+
+
