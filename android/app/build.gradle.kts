@@ -8,6 +8,12 @@ android {
     namespace = "com.elman.carehelper"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
+    sourceSets {
+        getByName("main") {
+            resources.srcDirs("src/main/resources")
+        }
+    }
+}
 
     compileOptions {
         // КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: в .kts добавляется префикс "is"
