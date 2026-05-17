@@ -3,6 +3,7 @@ import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 class NotificationService {
+  // Используем одно имя переменной везде
   static final FlutterLocalNotificationsPlugin _notifications =
       FlutterLocalNotificationsPlugin();
 
@@ -24,17 +25,20 @@ class NotificationService {
     required String body,
   }) async {
     const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'medicine_silent_v1', // Новый ID канала, чтобы сбросить старые настройки
-      'Medicine Reminders',
-      importance: Importance.max,
-      priority: Priority.max,
-      playSound: false, // ГОВОРИМ СИСТЕМЕ: НЕ ИГРАЙ СВОЙ ЗВУК
+      'care_helper_urgent_v4', // МЕНЯЕМ ID на v4, чтобы сбросить старые настройки системы
+      'Urgent Reminders',
+      channelDescription: 'Notifications for medical procedures',
+      importance: Importance.max, // Обязательно для всплывающего баннера
+      priority: Priority.high,    // Обязательно для баннера
+      fullScreenIntent: true,     // Позволяет всплыть на заблокированном экране
+      category: AndroidNotificationCategory.reminder,
+      playSound: true,
       enableVibration: true,
-      silent: true, // Дополнительный флаг тишины
     );
-
+    
     const NotificationDetails platformDetails = NotificationDetails(android: androidDetails);
     await _notifications.show(id, title, body, platformDetails);
   }
 }
- 
+
+

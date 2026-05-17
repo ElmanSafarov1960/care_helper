@@ -7,50 +7,54 @@ import 'package:flutter/material.dart';
 import 'services/notification_service.dart';
 import 'package:remind_me/screens/main_menu.dart';
 import 'package:flutter/services.dart';
-
-
-
+import 'services/storage_service.dart'; 
 
 @pragma('vm:entry-point')
 void onAlarm(int id) async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.reload();
 
-  // Это самая надежная проверка. Если мы сделали cancelAlarm, этого ключа НЕ БУДЕТ.
-  if (!prefs.containsKey('alarm_sound_$id')) {
-    print("DEBUG: Alarm $id absent from Prefs. Remaining silent.");
+  if (!prefs.containsKey('alarm_sound_$id')) return;
+
+  final storage = StorageService();
+  final Map<String, dynamic> medsData = await storage.loadJson('meds.json', {});
+  
+  if (medsData.isEmpty) {
+    await prefs.remove('alarm_sound_$id');
+    await prefs.remove('alarm_time_$id');
     return;
   }
 
-  // Проверку файла meds.json можно оставить, но лучше искать в нем ID лекарства,
-  // а не ID будильника. Но для начала давай добьемся стабильного звука.
-
   String? soundFile = prefs.getString('alarm_sound_$id');
   int? scheduledTimeMs = prefs.getInt('alarm_time_$id');
-
   if (scheduledTimeMs == null) return;
 
   final scheduledTime = DateTime.fromMillisecondsSinceEpoch(scheduledTimeMs);
   final now = DateTime.now();
   final difference = now.difference(scheduledTime).inMinutes.abs();
 
-  // Если разница во времени адекватная (меньше 2 минут)
-  if (difference < 2 && soundFile != null && soundFile != "none") {
-    final player = AudioPlayer();
-    try {
-      await player.play(AssetSource('sounds/$soundFile'));
-      await player.setVolume(1.0);
-      print("DEBUG: Sound started successfully");
-    } catch (e) {
-      print("Error playing sound: $e");
+  // ПРОВЕРКА ВРЕМЕНИ (в пределах 2 минут)
+  if (difference < 2) {
+    
+    // 1. ПОКАЗЫВАЕМ УВЕДОМЛЕНИЕ ВСЕГДА (даже если soundFile == "none")
+    // Оно теперь вне условия проверки звука
+    await NotificationService.showNotification(
+      id: id,
+      title: "Care Helper",
+      body: "Time to take your medication",
+    );
+
+    // 2. ИГРАЕМ МУЗЫКУ, ТОЛЬКО ЕСЛИ ОНА ВЫБРАНА
+    if (soundFile != null && soundFile != "none") {
+      final player = AudioPlayer();
+      try {
+        await player.play(AssetSource('sounds/$soundFile'));
+        await player.setVolume(1.0);
+      } catch (e) {
+        print("Error playing sound: $e");
+      }
     }
   }
-
-  await NotificationService.showNotification(
-    id: id,
-    title: "Reminder",
-    body: "Time to take your medication",
-  );
 }
 
 void main() async {
@@ -96,3 +100,5 @@ class RemindMeApp extends StatelessWidget {
     );
   }
 }
+
+

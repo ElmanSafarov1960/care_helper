@@ -45,7 +45,16 @@ class _MedsScreenState extends State<MedsScreen> {
     });
   }
 
+
   Future<void> _saveAll({bool showSnackBar = true}) async {
+    if (_meds.isEmpty) {
+    // Можно перебрать все возможные ID или просто очистить SharedPreferences
+    // Но лучше просто сохранить пустой файл
+    await _storage.saveJson('meds.json', {});
+    if (mounted) setState(() {});
+    return;
+  }
+
     // 1. Очистка старых будильников
     for (var med in _meds) {
       for (int i = 0; i < 10; i++) {
@@ -172,8 +181,7 @@ class _MedsScreenState extends State<MedsScreen> {
                 padding: const EdgeInsets.only(bottom: 30),
                 child: Column(
                   children: [
-                    // ТУТ КНОПКА УДАЛЕНА (Больше не дублируется)
-                               
+                              
                     ..._meds.asMap().entries.map((entry) {
                       return _buildMedicineCard(entry.value, entry.key);
                     }).toList(),

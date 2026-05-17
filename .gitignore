@@ -70,3 +70,4 @@ contacts.json
 .fvm/
 
 .env*
+**/carehelper.jks
